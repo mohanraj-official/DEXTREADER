@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — BookWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <style>
+    /* Decorative background shapes */
+    .auth-bg-shape {
+      position:fixed; pointer-events:none; border-radius:50%; z-index:0;
+    }
+    .auth-bg-shape--1 {
+      width:500px; height:500px;
+      background:radial-gradient(circle, rgba(232,96,28,.1) 0%, transparent 70%);
+      top:-150px; right:-100px;
+    }
+    .auth-bg-shape--2 {
+      width:400px; height:400px;
+      background:radial-gradient(circle, rgba(26,53,96,.5) 0%, transparent 70%);
+      bottom:-100px; left:-120px;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-bg-shape auth-bg-shape--1"></div>
+  <div class="auth-bg-shape auth-bg-shape--2"></div>
+
+  <!-- Minimal nav strip -->
+  <nav class="navbar" role="navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <i class="fa-solid fa-book-open-reader"></i>
+        Book<em>Wise</em>
+      </a>
+      <div class="nav-clock">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">
+          <i class="fa-solid fa-arrow-left"></i> Back to Library
+        </a>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Auth container -->
+  <main class="auth-page" style="position:relative;z-index:1;">
+    <div class="auth-container">
+
+      <!-- Brand -->
+      <div class="auth-brand">
+        <div class="auth-brand__logo">
+          <i class="fa-solid fa-book-open-reader"></i>
+          Book<em>Wise</em>
+        </div>
+        <p>Your daily reading companion</p>
+      </div>
+
+      <!-- Card with tabs -->
+      <div class="auth-card">
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab tab--active" id="tab-login" role="tab" aria-selected="true" aria-controls="panel-login">
+            <i class="fa-solid fa-right-to-bracket"></i>&nbsp; Log In
+          </button>
+          <button class="auth-tab" id="tab-signup" role="tab" aria-selected="false" aria-controls="panel-signup">
+            <i class="fa-solid fa-user-plus"></i>&nbsp; Sign Up
+          </button>
+        </div>
+
+        <!-- Login panel -->
+        <div class="auth-panel" id="panel-login" role="tabpanel">
+          <h2 class="auth-form-title">Welcome back</h2>
+          <p class="auth-form-sub">Sign in to continue your reading streak.</p>
+
+          <form id="login-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="login-email">Email address</label>
+              <input
+                class="form-input" id="login-email" type="email"
+                placeholder="you@example.com" required autocomplete="email"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="login-password">Password</label>
+              <div class="form-row">
+                <input
+                  class="form-input" id="login-password" type="password"
+                  placeholder="••••••••" required autocomplete="current-password"
+                  style="padding-right:2.75rem;"
+                />
+                <button type="button" class="pw-toggle" aria-label="Show password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="auth-submit-btn">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </button>
+          </form>
+
+          <p style="text-align:center;margin-top:1.25rem;font-size:.85rem;color:var(--tx-3);">
+            Don't have an account?
+            <button class="auth-tab" style="color:var(--o400);font-weight:600;padding:0;display:inline;" onclick="document.getElementById('tab-signup').click()">
+              Sign up free
+            </button>
+          </p>
+        </div>
+
+        <!-- Signup panel -->
+        <div class="auth-panel panel--hidden" id="panel-signup" role="tabpanel">
+          <h2 class="auth-form-title">Create account</h2>
+          <p class="auth-form-sub">Join thousands of daily readers for free.</p>
+
+          <form id="signup-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="signup-name">Full name</label>
+              <input
+                class="form-input" id="signup-name" type="text"
+                placeholder="Jane Doe" required autocomplete="name"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-email">Email address</label>
+              <input
+                class="form-input" id="signup-email" type="email"
+                placeholder="you@example.com" required autocomplete="email"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-password">Password</label>
+              <div class="form-row">
+                <input
+                  class="form-input" id="signup-password" type="password"
+                  placeholder="At least 6 characters" required autocomplete="new-password"
+                  style="padding-right:2.75rem;"
+                />
+                <button type="button" class="pw-toggle" aria-label="Show password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signup-confirm">Confirm password</label>
+              <div class="form-row">
+                <input
+                  class="form-input" id="signup-confirm" type="password"
+                  placeholder="Re-enter password" required autocomplete="new-password"
+                  style="padding-right:2.75rem;"
+                />
+                <button type="button" class="pw-toggle" aria-label="Show password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="auth-submit-btn">
+              <i class="fa-solid fa-user-plus"></i> Create Account
+            </button>
+          </form>
+
+          <p style="text-align:center;margin-top:1.25rem;font-size:.85rem;color:var(--tx-3);">
+            Already have an account?
+            <button class="auth-tab" style="color:var(--o400);font-weight:600;padding:0;display:inline;" onclick="document.getElementById('tab-login').click()">
+              Sign in
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <!-- Features strip -->
+      <div style="display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-top:2rem;">
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--tx-3);">
+          <i class="fa-solid fa-shield-halved" style="color:var(--o500);"></i> Secure login
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--tx-3);">
+          <i class="fa-solid fa-gift" style="color:var(--o500);"></i> Always free
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--tx-3);">
+          <i class="fa-solid fa-fire" style="color:var(--o500);"></i> Daily streaks
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

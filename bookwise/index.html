@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookWise — Read Smarter Every Day</title>
+  <meta name="description" content="Discover key insights from the world's best books. Join BookWise and read smarter." />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Firebase Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ─── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <i class="fa-solid fa-book-open-reader"></i>
+        Book<em>Wise</em>
+      </a>
+
+      <div class="nav-clock">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
+
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link active">Library</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="admin.html" class="nav-link nav-link--admin" id="admin-link" style="display:none">
+          <i class="fa-solid fa-shield-halved"></i> Admin
+        </a>
+
+        <!-- Logged-out buttons -->
+        <div id="auth-buttons">
+          <a href="auth.html" class="btn btn--outline btn--sm">Log In</a>
+          <a href="auth.html?tab=signup" class="btn btn--primary btn--sm">Sign Up Free</a>
+        </div>
+
+        <!-- Logged-in user menu -->
+        <div id="user-menu">
+          <button id="user-avatar-btn" aria-haspopup="true" aria-expanded="false" title="Account menu">
+            <span id="user-initials">U</span>
+          </button>
+          <span id="user-name"></span>
+          <div id="user-dropdown" role="menu">
+            <a href="dashboard.html" role="menuitem"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <hr />
+            <button class="js-logout" role="menuitem">
+              <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ───────────────────────────────────────────── -->
+  <section class="hero container">
+    <div class="hero__eyebrow">
+      <i class="fa-solid fa-star"></i> Your Daily Reading Companion
+    </div>
+    <h1 class="hero__title">
+      The World's Best Books,<br />
+      <span class="highlight">Distilled into Insights</span>
+    </h1>
+    <p class="hero__sub">
+      Skip the fluff. Get the life-changing ideas from bestsellers in under 5 minutes.
+      Build knowledge every day, one book at a time.
+    </p>
+    <div class="hero__actions">
+      <a href="auth.html?tab=signup" class="btn btn--primary btn--lg">
+        <i class="fa-solid fa-rocket"></i> Start Reading — Free
+      </a>
+      <a href="#library" class="btn btn--outline btn--lg">
+        <i class="fa-solid fa-binoculars"></i> Browse Library
+      </a>
+    </div>
+  </section>
+
+  <!-- ─── Stats bar ────────────────────────────────────────── -->
+  <section style="padding-block:0 clamp(2rem,4vw,3rem);">
+    <div class="container">
+      <div style="display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 0;">
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--o400);">10+</div>
+          <div style="font-size:.8rem;color:var(--tx-3);font-weight:500;">Books Available</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--o400);">5 min</div>
+          <div style="font-size:.8rem;color:var(--tx-3);font-weight:500;">Avg Read Time</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--o400);">🔥</div>
+          <div style="font-size:.8rem;color:var(--tx-3);font-weight:500;">Daily Streaks</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--o400);">Free</div>
+          <div style="font-size:.8rem;color:var(--tx-3);font-weight:500;">Always</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Library ──────────────────────────────────────────── -->
+  <section class="library-section container" id="library">
+    <div class="library-header">
+      <div>
+        <div class="section-label"><i class="fa-solid fa-layer-group"></i> &nbsp;Library</div>
+        <h2 style="margin-top:.3rem;">All Books</h2>
+      </div>
+      <p style="font-size:.875rem;color:var(--tx-3);">
+        <i class="fa-solid fa-lock" style="color:var(--o500);margin-right:.3rem;"></i>
+        Login to unlock full insights
+      </p>
+    </div>
+
+    <!-- Grid populated by books.js -->
+    <div class="books-grid" id="books-grid">
+      <div class="books-spinner" id="books-spinner">
+        <i class="fa-solid fa-spinner fa-spin"></i> Loading library…
+      </div>
+    </div>
+
+    <!-- Empty state (hidden by default) -->
+    <div class="empty-state" id="books-empty" style="display:none;">
+      <i class="fa-solid fa-book"></i>
+      <p>The library is being filled. Check back soon!</p>
+    </div>
+  </section>
+
+  <!-- ─── Footer ───────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-logo">Book<em>Wise</em></div>
+    <p>© 2025 BookWise. Read smarter, live better.</p>
+    <p style="font-size:.78rem;color:var(--tx-3);">
+      <i class="fa-regular fa-clock"></i> &nbsp;<span id="live-clock-foot"></span>
+    </p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/books.js"></script>
+  <script>
+    // Sync second clock in footer
+    setInterval(() => {
+      const el = document.getElementById('live-clock-foot');
+      if (el) el.textContent = document.getElementById('live-clock')?.textContent || '';
+    }, 1000);
+
+    // Update user initials in avatar
+    auth.onAuthStateChanged(user => {
+      const initEl = document.getElementById('user-initials');
+      if (initEl && user) {
+        const name = user.displayName || user.email || 'U';
+        initEl.textContent = name.charAt(0).toUpperCase();
+      }
+    });
+  </script>
+</body>
+</html>

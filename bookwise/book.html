@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookWise — Book Detail</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <i class="fa-solid fa-book-open-reader"></i>
+        Book<em>Wise</em>
+      </a>
+      <div class="nav-clock">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Library</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="admin.html" class="nav-link nav-link--admin" id="admin-link" style="display:none">
+          <i class="fa-solid fa-shield-halved"></i> Admin
+        </a>
+        <div id="auth-buttons">
+          <a href="auth.html" class="btn btn--outline btn--sm">Log In</a>
+          <a href="auth.html?tab=signup" class="btn btn--primary btn--sm">Sign Up Free</a>
+        </div>
+        <div id="user-menu">
+          <button id="user-avatar-btn" aria-haspopup="true" title="Account menu">
+            <span id="user-initials">U</span>
+          </button>
+          <span id="user-name"></span>
+          <div id="user-dropdown">
+            <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <hr />
+            <button class="js-logout"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="book-detail-page container" id="book-detail">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a href="index.html">Library</a>
+      <i class="fa-solid fa-chevron-right"></i>
+      <span id="breadcrumb-title">Book</span>
+    </div>
+
+    <!-- Hero section (always visible) -->
+    <div class="book-hero" id="book-hero">
+      <!-- Populated by books.js -->
+      <div style="display:flex;align-items:center;gap:1rem;color:var(--tx-3);padding:3rem 0;">
+        <i class="fa-solid fa-spinner fa-spin" style="color:var(--o500);font-size:1.25rem;"></i>
+        Loading book…
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:var(--border);margin-block:2rem;"></div>
+
+    <!-- Content section (locked/unlocked by auth) -->
+    <div id="book-content" style="padding-bottom:4rem;">
+      <!-- Populated by books.js after auth check -->
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">Book<em>Wise</em></div>
+    <p>© 2025 BookWise. Read smarter, live better.</p>
+    <a href="index.html" class="btn btn--outline btn--sm">
+      <i class="fa-solid fa-arrow-left"></i> Back to Library
+    </a>
+  </footer>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/books.js"></script>
+  <script>
+    // Set breadcrumb from URL title param or wait for JS
+    auth.onAuthStateChanged(user => {
+      const el = document.getElementById('user-initials');
+      if (el && user) el.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+    });
+
+    // Update breadcrumb after hero loads
+    const heroObserver = new MutationObserver(() => {
+      const t = document.querySelector('.book-hero__title');
+      const b = document.getElementById('breadcrumb-title');
+      if (t && b) { b.textContent = t.textContent; heroObserver.disconnect(); }
+    });
+    heroObserver.observe(document.getElementById('book-hero'), { childList: true, subtree: true });
+  </script>
+</body>
+</html>

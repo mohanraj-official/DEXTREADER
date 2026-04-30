@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — BookWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <i class="fa-solid fa-book-open-reader"></i>
+        Book<em>Wise</em>
+      </a>
+      <div class="nav-clock">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Library</a>
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="admin.html" class="nav-link nav-link--admin" id="admin-link" style="display:none">
+          <i class="fa-solid fa-shield-halved"></i> Admin
+        </a>
+        <div id="auth-buttons" style="display:none;">
+          <a href="auth.html" class="btn btn--outline btn--sm">Log In</a>
+          <a href="auth.html?tab=signup" class="btn btn--primary btn--sm">Sign Up</a>
+        </div>
+        <div id="user-menu">
+          <button id="user-avatar-btn" aria-haspopup="true" title="Account menu">
+            <span id="user-initials">U</span>
+          </button>
+          <span id="user-name"></span>
+          <div id="user-dropdown">
+            <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <hr />
+            <button class="js-logout"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Dashboard body -->
+  <main class="dash-page container">
+
+    <!-- Header -->
+    <div class="dash-header">
+      <div class="dash-header__left">
+        <h1>
+          <span id="dash-greeting" style="color:var(--tx-3);font-size:clamp(1.2rem,3vw,1.8rem);">Good morning,</span><br />
+          <span id="dash-name">Reader</span>
+        </h1>
+        <p id="dash-email" style="color:var(--tx-3);margin-top:.25rem;"></p>
+      </div>
+      <div class="dash-header__right">
+        <span class="member-badge">
+          <i class="fa-solid fa-medal" style="color:var(--o400);"></i>
+          <span id="member-since">Member</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="dash-grid">
+
+      <!-- Streak card -->
+      <div class="dash-card streak-panel">
+        <div class="streak-main">
+          <span id="streak-flame">🔥</span>
+          <div class="streak-info">
+            <h2 style="font-family:'Playfair Display',serif;font-weight:900;color:var(--o400);">
+              <span id="streak-count">0</span> Day<span id="streak-s">s</span>
+            </h2>
+            <p id="streak-label" style="font-size:.85rem;">Start your streak today!</p>
+          </div>
+        </div>
+        <div>
+          <p class="dash-card__label" style="margin-bottom:.75rem;">
+            <i class="fa-solid fa-calendar-days"></i> This week
+          </p>
+          <div class="streak-bubbles" id="streak-days">
+            <!-- Filled by dashboard.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Books read -->
+      <div class="dash-card">
+        <div class="dash-card__label">
+          <i class="fa-solid fa-book-open"></i> Books Read
+        </div>
+        <div class="dash-card__value dash-card__value--orange" id="stat-books">0</div>
+        <div class="dash-card__sub">Total books unlocked</div>
+      </div>
+
+      <!-- Streak days -->
+      <div class="dash-card">
+        <div class="dash-card__label">
+          <i class="fa-solid fa-fire"></i> Streak
+        </div>
+        <div class="dash-card__value" id="stat-streak">0</div>
+        <div class="dash-card__sub">Consecutive days</div>
+      </div>
+
+      <!-- Total sessions -->
+      <div class="dash-card">
+        <div class="dash-card__label">
+          <i class="fa-solid fa-book-bookmark"></i> Reading Sessions
+        </div>
+        <div class="dash-card__value" id="stat-sessions">0</div>
+        <div class="dash-card__sub">All-time reads</div>
+      </div>
+
+    </div>
+
+    <!-- How streak works -->
+    <div style="
+      background:var(--o100); border:1px solid var(--border-h);
+      border-radius:var(--radius); padding:1rem 1.5rem;
+      display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+      margin-bottom:2.5rem;
+    ">
+      <i class="fa-solid fa-circle-info" style="color:var(--o400);font-size:1.1rem;"></i>
+      <p style="font-size:.875rem;color:var(--tx-2);margin:0;flex:1;">
+        <strong style="color:var(--tx-1);">How streaks work:</strong>
+        Log in and read a book every day to keep your streak alive.
+        Miss a day and it resets to 1. Hit 7+ days for a blazing 🔥 streak!
+      </p>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem;">
+      <a href="index.html" class="btn btn--primary">
+        <i class="fa-solid fa-book-open-reader"></i> Browse Library
+      </a>
+      <button class="btn btn--outline js-logout">
+        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+      </button>
+    </div>
+
+    <!-- Reading activity -->
+    <div class="activity-section">
+      <h2 style="margin-bottom:1.5rem;">
+        <i class="fa-solid fa-clock-rotate-left" style="color:var(--o400);margin-right:.5rem;font-size:1.2rem;"></i>
+        Reading History
+      </h2>
+      <div class="activity-list" id="activity-list">
+        <div style="display:flex;align-items:center;gap:.75rem;color:var(--tx-3);padding:2rem 0;">
+          <i class="fa-solid fa-spinner fa-spin" style="color:var(--o500);"></i>
+          Loading activity…
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">Book<em>Wise</em></div>
+    <p>© 2025 BookWise. Read smarter, live better.</p>
+    <a href="index.html" class="btn btn--outline btn--sm">
+      <i class="fa-solid fa-book"></i> Library
+    </a>
+  </footer>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    auth.onAuthStateChanged(user => {
+      const el = document.getElementById('user-initials');
+      if (el && user) el.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+    });
+  </script>
+</body>
+</html>
