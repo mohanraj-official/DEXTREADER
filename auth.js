@@ -6,14 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const params     = new URLSearchParams(window.location.search);
   const redirectTo = params.get('redirect') || 'dashboard.html';
 
-  // Redirect if already logged in
+  // ── Flag to prevent auto-redirect during active signup ───
+  // Without this, onAuthStateChanged fires the moment the user
+  // is created and redirects BEFORE the Firestore write finishes.
+  let isSigningUp = false;
+
+  // Redirect if already logged in (skip during active signup)
   auth.onAuthStateChanged(user => {
-    if (user) window.location.href = decodeURIComponent(redirectTo);
+    if (user && !isSigningUp) {
+      window.location.href = decodeURIComponent(redirectTo);
+    }
   });
 
   // ── Tab switching ────────────────────────────────────────
-  const tabLogin  = document.getElementById('tab-login');
-  const tabSignup = document.getElementById('tab-signup');
+  const tabLogin    = document.getElementById('tab-login');
+  const tabSignup   = document.getElementById('tab-signup');
   const panelLogin  = document.getElementById('panel-login');
   const panelSignup = document.getElementById('panel-signup');
 
@@ -35,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const inp  = btn.previousElementSibling;
       const icon = btn.querySelector('i');
-      inp.type   = inp.type === 'password' ? 'text' : 'password';
+      inp.type       = inp.type === 'password' ? 'text' : 'password';
       icon.className = inp.type === 'text' ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
     });
   });
@@ -54,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Welcome back! 🎉', 'success');
       setTimeout(() => window.location.href = decodeURIComponent(redirectTo), 900);
     } catch (err) {
+      console.error('Login error:', err);
       showToast(getAuthError(err.code), 'error');
       setBtn(btn, false, '<i class="fa-solid fa-right-to-bracket"></i> Sign In');
     }
@@ -71,11 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (password !== confirm) return showToast('Passwords do not match.', 'error');
     if (password.length < 6)  return showToast('Password must be at least 6 characters.', 'error');
 
+    // ── Block auto-redirect while we write to Firestore ───
+    isSigningUp = true;
     setBtn(btn, true, 'Creating account…');
+
     try {
+      // Step 1: Create user in Firebase Auth
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await cred.user.updateProfile({ displayName: name });
 
+      // Step 2: Write user profile to Firestore
       const today = new Date().toISOString().split('T')[0];
       await db.collection('users').doc(cred.user.uid).set({
         name,
@@ -89,18 +102,32 @@ document.addEventListener('DOMContentLoaded', () => {
         isAdmin        : false
       });
 
+      // Step 3: Both done — now safe to redirect
       showToast('Welcome to BookWise! 🚀', 'success');
-      setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      setTimeout(() => {
+        isSigningUp = false;
+        window.location.href = 'dashboard.html';
+      }, 1000);
+
     } catch (err) {
-      showToast(getAuthError(err.code), 'error');
+      console.error('Signup error:', err.code, err.message);
+      isSigningUp = false;
+
+      // Show specific Firestore errors clearly
+      if (err.code === 'permission-denied') {
+        showToast('Database permission denied. Check Firestore rules.', 'error');
+      } else {
+        showToast(getAuthError(err.code), 'error');
+      }
+
       setBtn(btn, false, '<i class="fa-solid fa-user-plus"></i> Create Account');
     }
   });
 
   // ── Helpers ──────────────────────────────────────────────
   function setBtn(btn, loading, html) {
-    btn.disabled   = loading;
-    btn.innerHTML  = loading
+    btn.disabled  = loading;
+    btn.innerHTML = loading
       ? '<i class="fa-solid fa-spinner fa-spin"></i>&nbsp;&nbsp;' + html
       : html;
   }
