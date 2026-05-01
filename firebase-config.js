@@ -1,25 +1,24 @@
 // ============================================================
-// FIREBASE CONFIGURATION
-// Replace the values below with your Firebase project config
-// Go to: Firebase Console → Project Settings → Your Apps → SDK setup
+// FIREBASE CONFIGURATION — BookWise (Dext Reader)
 // ============================================================
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey            : "AIzaSyAWobldHjXOGCFVQ-dXxnJnw_DmEiYmqWA",
+  authDomain        : "dext-reader.firebaseapp.com",
+  projectId         : "dext-reader",
+  storageBucket     : "dext-reader.firebasestorage.app",
+  messagingSenderId : "134077382199",
+  appId             : "1:134077382199:web:e306db763197345a6089b2",
+  measurementId     : "G-4EYVYNNB0E"
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Firebase services (available globally)
+// Firebase services — available globally across all pages
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
 // ── Admin email ──────────────────────────────────────────────
-// Change this to your own email to get admin access
-const ADMIN_EMAIL = "admin@bookwise.com";
+// Change this to the email you signed up with
+const ADMIN_EMAIL = "dextermohan01@gmail.com";

@@ -1,12 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="./style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — BookWise</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <!-- Admin panel -->
+
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <i class="fa-solid fa-book-open-reader"></i>
+        Book<em>Wise</em>
+      </a>
+      <div class="nav-clock">
+        <i class="fa-regular fa-clock"></i>
+        <span id="live-clock"></span>
+      </div>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Library</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="admin.html" class="nav-link nav-link--admin active" id="admin-link">
+          <i class="fa-solid fa-shield-halved"></i> Admin
+        </a>
+        <div id="auth-buttons" style="display:none;">
+          <a href="auth.html" class="btn btn--outline btn--sm">Log In</a>
+        </div>
+        <div id="user-menu">
+          <button id="user-avatar-btn" aria-haspopup="true" title="Account menu">
+            <span id="user-initials">A</span>
+          </button>
+          <span id="user-name"></span>
+          <div id="user-dropdown">
+            <a href="dashboard.html"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            <hr />
+            <button class="js-logout"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </div>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="admin-page container">
+
+    <!-- Page Header -->
+    <div class="page-header" style="padding-bottom:2rem;">
+      <h1 style="display:flex;align-items:center;gap:.75rem;">
+        <i class="fa-solid fa-shield-halved" style="color:var(--o400);font-size:1.8rem;"></i>
+        Admin Panel
+      </h1>
+      <p style="color:var(--tx-3);margin-top:.4rem;">
+        Add and manage books in the BookWise library.
+      </p>
+    </div>
+
+    <!-- Gate (hidden until auth confirms admin) -->
+    <div class="admin-gate" id="admin-gate">
+      <div class="admin-layout">
+
+        <!-- ── Left: Add Book Form ─────────────────────── -->
+        <div class="admin-panel">
+          <h2>
+            <i class="fa-solid fa-plus" style="color:var(--o400);margin-right:.5rem;font-size:1rem;"></i>
+            Add New Book
+          </h2>
+
+          <form id="add-book-form" novalidate>
+
+            <div class="form-group">
+              <label class="form-label" for="book-title">Title <span style="color:var(--o400);">*</span></label>
+              <input
+                class="form-input" id="book-title" type="text"
+                placeholder="e.g. Atomic Habits" required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-author">Author</label>
+              <input
+                class="form-input" id="book-author" type="text"
+                placeholder="e.g. James Clear"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-category">Category</label>
+              <input
+                class="form-input" id="book-category" type="text"
+                placeholder="e.g. Self Help"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-cover">
+                Cover Image URL <span style="color:var(--o400);">*</span>
+              </label>
+              <input
+                class="form-input" id="book-cover" type="url"
+                placeholder="https://example.com/cover.jpg" required
+              />
+              <div id="cover-preview-wrap" style="display:none;margin-top:.85rem;">
+                <img id="cover-preview" alt="Cover preview" style="width:110px;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.45);" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="book-insights">
+                Key Insights <span style="color:var(--o400);">*</span>
+              </label>
+              <textarea
+                class="form-input" id="book-insights"
+                placeholder="One insight per line…&#10;&#10;Habits are the compound interest of self-improvement.&#10;Every action you take is a vote for who you want to become."
+              ></textarea>
+              <p class="form-hint">
+                <i class="fa-solid fa-circle-info" style="color:var(--o500);"></i>
+                Enter each insight on a new line. At least 1 required.
+              </p>
+            </div>
+
+            <button type="submit" class="admin-submit-btn">
+              <i class="fa-solid fa-plus"></i>&nbsp;Add Book to Library
+            </button>
+
+          </form>
+        </div>
+
+        <!-- ── Right: Books List ───────────────────────── -->
+        <div class="admin-panel">
+          <h2>
+            <i class="fa-solid fa-book-open" style="color:var(--o400);margin-right:.5rem;font-size:1rem;"></i>
+            All Books
+          </h2>
+          <div class="admin-books-list" id="admin-books-list">
+            <p class="admin-loading">
+              <i class="fa-solid fa-spinner fa-spin"></i> Loading books…
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">Book<em>Wise</em></div>
+    <p>© 2025 BookWise. Admin Panel.</p>
+    <a href="index.html" class="btn btn--outline btn--sm">
+      <i class="fa-solid fa-arrow-left"></i> Back to Library
+    </a>
+  </footer>
+
+  <!-- Scripts — flat paths -->
+  <script src="firebase-config.js"></script>
+  <script src="utils.js"></script>
+  <script src="admin.js"></script>
+
 </body>
 </html>
